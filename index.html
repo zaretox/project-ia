@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Automatiser">
+<meta name="theme-color" content="#E3E6E2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141B20" media="(prefers-color-scheme: dark)">
+<title>Automatiser en 12 semaines</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E3E6E2; --paper:#F3F4F1; --ink:#17242E; --muted:#56636C;
+  --line:#C3CCD1; --grid:#A9BBC8; --accent:#E8591A; --ok:#2E7A4E; --soft:#E9ECE8;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#141B20; --paper:#1C252C; --ink:#E6ECEF; --muted:#9AA8B2;
+    --line:#33434F; --grid:#3A4D5B; --accent:#FF7A3D; --ok:#5FBF86; --soft:#222D35;
+  }
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 var(--body)}
+a{color:var(--accent)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:640px;margin:0 auto;padding:18px 16px calc(96px + env(safe-area-inset-bottom,0px))}
+
+h1{font:700 2.6rem/0.95 var(--display);margin:6px 0 4px;letter-spacing:-.01em}
+h2{font:600 1.55rem/1.1 var(--display);margin:28px 0 10px}
+h3{font:600 1.15rem/1.2 var(--display);margin:18px 0 6px}
+.lede{color:var(--muted);margin:0 0 18px;max-width:34em}
+
+/* Fiche de progression : l'élément signature */
+.sheet{background:var(--paper);border:1.5px solid var(--ink);border-radius:3px}
+.sheet-head{display:grid;grid-template-columns:1fr auto;border-bottom:1.5px solid var(--ink)}
+.sheet-head > div{padding:8px 12px}
+.sheet-head > div + div{border-left:1.5px solid var(--ink);text-align:right}
+.field{font-size:.78rem;color:var(--muted);display:block}
+.value{font:600 1.15rem/1.2 var(--display)}
+.curve{display:block;width:100%;height:auto}
+.sheet-foot{border-top:1px solid var(--line);padding:10px 12px;font-size:.92rem;color:var(--muted)}
+.sheet-foot strong{color:var(--ink)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:4px;font-size:.82rem}
+.legend span::before{content:"";display:inline-block;width:18px;height:0;border-top:2.5px solid var(--accent);vertical-align:middle;margin-right:6px}
+.legend span.t::before{border-top:2px dashed var(--grid)}
+
+.start{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.btn{background:var(--ink);color:var(--paper);border:0;border-radius:4px;padding:10px 14px;font-weight:600;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+.btn.small{padding:6px 10px;font-size:.88rem}
+input[type=date]{font:inherit;color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:4px;padding:7px 8px}
+
+/* Semaines */
+details.week{background:var(--paper);border:1px solid var(--line);border-radius:3px;margin-bottom:8px}
+details.week[open]{border-color:var(--ink)}
+details.week.now{border-left:5px solid var(--accent)}
+summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:2.4rem 1fr auto;align-items:center;gap:8px;padding:12px}
+summary::-webkit-details-marker{display:none}
+.wnum{font:700 1.5rem/1 var(--display);color:var(--muted)}
+.now .wnum{color:var(--accent)}
+.wtitle{font:600 1.12rem/1.15 var(--display)}
+.wsub{display:block;font:400 .8rem/1.3 var(--body);color:var(--muted)}
+.count{font:600 .95rem var(--display);color:var(--muted);white-space:nowrap}
+.count.full{color:var(--ok)}
+.wbody{padding:0 14px 16px;border-top:1px solid var(--line)}
+.goal{margin:12px 0 4px;font-weight:500}
+.check{display:grid;grid-template-columns:22px 1fr;gap:10px;align-items:start;padding:8px 0;border-bottom:1px dashed var(--line);cursor:pointer}
+.check:last-child{border-bottom:0}
+.check input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--ok)}
+.check input:checked + span{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line)}
+.tag{display:block;font:600 .8rem var(--display);color:var(--accent);letter-spacing:.02em}
+.tip{background:var(--soft);border-left:3px solid var(--ink);padding:10px 12px;margin:14px 0;font-size:.95rem}
+.links{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.links a{font-size:.88rem;text-decoration:none;border:1px solid var(--line);border-radius:4px;padding:5px 9px;color:var(--ink);background:var(--bg)}
+.energy{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:14px 0 8px}
+.energy .lbl{font-size:.9rem;color:var(--muted);margin-right:4px}
+.energy button{width:36px;height:36px;border:1.5px solid var(--line);background:var(--bg);border-radius:4px;font-weight:600;cursor:pointer}
+.energy button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+textarea{width:100%;min-height:74px;font:inherit;font-size:.95rem;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:4px;padding:8px}
+
+/* Ressources et routine */
+.group{background:var(--paper);border:1px solid var(--line);border-radius:3px;padding:4px 14px 10px;margin-bottom:10px}
+.res{padding:10px 0;border-bottom:1px dashed var(--line)}
+.res:last-child{border-bottom:0}
+.res a{font-weight:600;text-decoration:none}
+.res p{margin:2px 0 0;font-size:.93rem;color:var(--muted)}
+.prompt{background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:10px;font-size:.9rem;white-space:pre-wrap;margin:6px 0}
+.slot{display:grid;grid-template-columns:7.2rem 1fr;gap:10px;padding:10px 0;border-bottom:1px dashed var(--line)}
+.slot:last-child{border-bottom:0}
+.slot b{font:600 1rem/1.2 var(--display)}
+.slot span{font-size:.94rem}
+ul.rules{margin:6px 0;padding-left:1.1em}
+ul.rules li{margin:6px 0}
+.danger{color:var(--muted);font-size:.88rem;margin-top:26px}
+
+/* Barre d'onglets */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--paper);border-top:1.5px solid var(--ink);display:grid;grid-template-columns:repeat(3,1fr);padding-bottom:env(safe-area-inset-bottom,0px);z-index:10}
+nav.tabs button{background:none;border:0;padding:12px 4px 13px;font:600 1.05rem var(--display);color:var(--muted);cursor:pointer;border-top:3px solid transparent;margin-top:-1.5px}
+nav.tabs button[aria-selected=true]{color:var(--ink);border-top-color:var(--accent)}
+[hidden]{display:none!important}
+.toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:4px;font-size:.9rem;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section id="tab-plan">
+    <h1>Automatiser,<br>12 semaines</h1>
+    <p class="lede">De zéro à une compétence vendable : Make, n8n, agents IA, puis tes premiers clients.</p>
+    <div id="hero"></div>
+    <h2>Le plan</h2>
+    <div id="weeks"></div>
+  </section>
+  <section id="tab-res" hidden></section>
+  <section id="tab-routine" hidden></section>
+</div>
+
+<nav class="tabs" role="tablist">
+  <button role="tab" aria-selected="true" data-tab="plan">Plan</button>
+  <button role="tab" aria-selected="false" data-tab="res">Ressources</button>
+  <button role="tab" aria-selected="false" data-tab="routine">Routine</button>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script>
+const L = {
+  make:["Make Academy","https://academy.make.com/"],
+  makeT:["Templates Make","https://www.make.com/en/templates"],
+  makeC:["Forum Make","https://community.make.com/"],
+  n8n1:["n8n Level 1","https://docs.n8n.io/courses/level-one/"],
+  n8n2:["n8n Level 2","https://docs.n8n.io/courses/level-two/"],
+  n8nT:["Templates n8n","https://n8n.io/workflows/"],
+  n8nC:["Forum n8n","https://community.n8n.io/"],
+  dc:["DataCamp : intro n8n","https://www.datacamp.com/courses/introduction-to-workflow-automation-with-n8n"],
+  fcc:["freeCodeCamp","https://www.freecodecamp.org/learn"],
+  json:["Guide JSON (MDN)","https://developer.mozilla.org/fr/docs/Learn/JavaScript/Objects/JSON"],
+  meteo:["Open-Meteo","https://open-meteo.com/"],
+  hook:["webhook.site","https://webhook.site/"],
+  tally:["Tally","https://tally.so/"],
+  prompt:["Guide des prompts Claude","https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/overview"],
+  claude:["Claude","https://claude.ai/"],
+  nblm:["NotebookLM","https://notebooklm.google.com/"],
+  malt:["Malt","https://www.malt.fr/"],
+  formal:["Guichet unique entreprises","https://formalites.entreprises.gouv.fr/"],
+  urssaf:["URSSAF auto-entrepreneur","https://www.autoentrepreneur.urssaf.fr/"]
+};
+
+const WEEKS = [
+ {n:1,t:"Poser les fondations",s:"Mois 1 : Make",g:"Comprendre ce qu'est une automatisation et construire la première.",
+  tasks:["Créer tes comptes gratuits : Make, Google (Sheets, Gmail, Forms) et Claude.",
+   "Make Academy, niveau Foundation : cours « Setting up my first scenario » et « Expanding my first scenario ».",
+   "Apprendre le vocabulaire : déclencheur (trigger), module, mapping, filtre, routeur. L'écrire avec tes mots dans ton carnet.",
+   "Finir le niveau Foundation et passer le test pour obtenir le badge."],
+  p:"Un Google Form qui remplit automatiquement un Google Sheet et t'envoie un mail récapitulatif.",
+  d:"Sans notes, expliquer à voix haute ce que sont un trigger, une action et un mapping, puis refaire le projet de zéro en moins de 30 min.",
+  tip:"Ouvre un carnet d'erreurs dès le jour 1 : chaque bug, sa cause, sa solution. Dans 3 mois, ce carnet vaudra plus que n'importe quel cours.",
+  links:["make","makeT"]},
+ {n:2,t:"Parler le langage des données",s:"Mois 1 : Make",g:"Comprendre le JSON et les API, la base de presque toutes les automatisations.",
+  tasks:["Lire le guide JSON de MDN, en français.",
+   "Demander à Claude : « Explique-moi une API comme si je travaillais en labo, avec l'analogie d'une demande d'essai. »",
+   "Commencer Make Basics (manipulation des données).",
+   "Tester un webhook avec webhook.site pour voir ce qu'une appli envoie réellement."],
+  p:"Un scénario qui interroge l'API gratuite Open-Meteo chaque matin et t'envoie la météo de Saintes par mail.",
+  d:"Face à un JSON inconnu, retrouver en 5 min le chemin exact d'une valeur (par exemple la température de demain) et la mapper.",
+  tip:"Quand tu bloques plus de 20 minutes, demande à Claude en expliquant ce que tu as déjà essayé. Pas avant : ces 20 minutes de lutte, c'est là que tu apprends.",
+  links:["json","meteo","hook","make"]},
+ {n:3,t:"Transformer les données",s:"Mois 1 : Make",g:"Maîtriser les fonctions Make : texte, dates, calculs, conditions.",
+  tasks:["Finir Make Basics et passer le test pour le badge.",
+   "T'entraîner sur les fonctions de dates (formatDate, addDays) et de texte.",
+   "Construire un routeur à 3 branches avec un filtre sur chacune.",
+   "Ouvrir 3 templates Make et expliquer chaque module à Claude pour vérifier ta compréhension."],
+  p:"Ton tracker de clipping : chaque clip saisi dans un formulaire arrive dans un Sheet, et chaque dimanche tu reçois le total des vues et des gains de la semaine.",
+  d:"Refaire le tracker sans regarder ton scénario d'origine.",
+  tip:"Automatise d'abord tes propres corvées. Un projet qui sert dans ta vie réelle, tu le comprends et tu t'en souviens.",
+  links:["make","makeT"]},
+ {n:4,t:"Boucles et webhooks",s:"Mois 1 : Make",g:"Traiter des listes d'éléments et réagir en temps réel.",
+  tasks:["Make Intermediate : itérateurs et agrégateurs.",
+   "Make Intermediate : webhooks, puis test pour le badge.",
+   "Lire 3 sujets résolus sur le forum Make pour voir les vrais problèmes des utilisateurs.",
+   "Relire et compléter ton carnet d'erreurs."],
+  p:"Un tri automatique de ta boîte Gmail : les mails sont classés par catégorie et tu reçois un résumé quotidien des importants.",
+  d:"En 1 h, sans tuto : un webhook qui reçoit les réponses d'un formulaire Tally et les ajoute à un Sheet.",
+  tip:"Bilan du mois 1 : 3 badges et 4 scénarios qui tournent, c'est une base réelle. Tu as fait ce que la plupart des gens se contentent de regarder en vidéo.",
+  links:["makeC","tally","make"]},
+ {n:5,t:"Brancher l'IA",s:"Mois 2 : IA et n8n",g:"Utiliser Claude dans un workflow pour lire, résumer et classer.",
+  tasks:["Créer une clé API (Anthropic ou OpenAI) et fixer une limite de dépense : 5 à 10 € suffisent pour apprendre.",
+   "Lire le guide de prompt engineering de Claude.",
+   "Apprendre à exiger une réponse en JSON strict, pour la réutiliser dans le scénario.",
+   "Comparer 2 versions d'un même prompt et noter laquelle donne des résultats plus fiables."],
+  p:"Tes mails entrants sont résumés en 3 lignes et classés (urgent, info, pub) par Claude, puis rangés dans un Sheet.",
+  d:"Écrire un prompt qui renvoie toujours un JSON valide, et le tester sur 10 mails différents sans une seule erreur.",
+  tip:"L'IA se trompe. Prévois toujours une sortie « je ne sais pas » dans ton prompt, et une validation humaine pour tout ce qui part chez un client.",
+  links:["prompt","claude"]},
+ {n:6,t:"Ton premier agent IA",s:"Mois 2 : IA et n8n",g:"Passer d'un workflow fixe à un agent qui prend des décisions.",
+  tasks:["Suivre le parcours AI Agent Builder de la Make Academy.",
+   "Comprendre la différence entre un workflow (étapes fixes) et un agent (il choisit ses outils).",
+   "Donner à ton agent 2 outils : lire un Sheet et envoyer un mail.",
+   "Documenter ton agent : ce qu'il fait, ses limites, ce qu'il ne doit jamais faire."],
+  p:"Un assistant de demandes de devis : un message arrive, l'agent l'analyse, repère les infos manquantes et prépare un brouillon de réponse que tu valides.",
+  d:"Demander à Claude de jouer un artisan sceptique, et le convaincre en moins de 2 minutes que ton agent lui fait gagner du temps.",
+  tip:"Ce projet de devis ressemble à ce que tu vendras plus tard. Garde des captures de chaque étape pour ton portfolio.",
+  links:["make","claude"]},
+ {n:7,t:"Passer sur n8n",s:"Mois 2 : IA et n8n",g:"Apprendre l'outil le plus demandé pour les agents IA.",
+  tasks:["Ouvrir un compte n8n Cloud (essai gratuit) ou l'installer sur ton PC.",
+   "Suivre le cours texte n8n Level 1.",
+   "Compléter avec le cours gratuit d'introduction à n8n sur DataCamp.",
+   "Valider le Level 1 pour obtenir le badge sur le forum n8n."],
+  p:"Refaire ton tri Gmail de la semaine 4 dans n8n, et noter les différences avec Make.",
+  d:"Recréer de mémoire le workflow Hacker News du cours Level 1.",
+  tip:"Lance l'essai n8n Cloud le jour où tu commences le cours, pas avant, pour ne pas gaspiller les jours gratuits.",
+  links:["n8n1","dc","n8nT"]},
+ {n:8,t:"Un peu de code",s:"Mois 2 : IA et n8n",g:"Lire et écrire du JavaScript simple pour le nœud Code de n8n.",
+  tasks:["freeCodeCamp : les bases de JavaScript (variables, tableaux, objets, fonctions).",
+   "Suivre le cours n8n Level 2 (données, code, gestion des erreurs).",
+   "Créer un workflow d'erreur qui te prévient quand un scénario plante.",
+   "Demander à Claude d'expliquer ligne par ligne chaque bout de code que tu utilises."],
+  p:"Ton agent devis de la semaine 6, reconstruit dans n8n avec un nœud Code pour nettoyer les données.",
+  d:"Écrire seul un nœud Code qui transforme « DUPONT jean » en « Jean Dupont » pour toute une liste.",
+  tip:"Tu n'as pas besoin de devenir développeur. Tu dois lire du code sans paniquer et savoir le modifier : Claude écrit, toi tu comprends et tu vérifies.",
+  links:["fcc","n8n2","n8nC"]},
+ {n:9,t:"Premier cas réel",s:"Mois 3 : clients",g:"Résoudre un vrai problème pour une vraie personne.",
+  tasks:["Trouver 1 personne avec une tâche pénible et répétitive : commerçant, artisan, indépendant, association.",
+   "Entretien de 30 min : comment elle fait aujourd'hui, combien de temps ça prend, ce qui l'agace.",
+   "Dessiner le processus sur papier avant d'ouvrir Make ou n8n.",
+   "Construire et tester avec ses vraies données."],
+  p:"Livrer l'automatisation gratuitement, en échange d'un témoignage écrit et du temps gagné chiffré.",
+  d:"Estimer le temps gagné par mois et le convertir en euros pour ce client.",
+  tip:"N'utilise jamais les données de ton employeur sans autorisation écrite. Ton premier cas doit venir d'en dehors du travail.",
+  links:["tally"]},
+ {n:10,t:"Deuxième cas et fiabilité",s:"Mois 3 : clients",g:"Livrer quelque chose qui tourne sans toi.",
+  tasks:["Trouver et réaliser un deuxième cas réel.",
+   "Ajouter gestion d'erreurs et alertes à tes 2 automatisations.",
+   "Rédiger une fiche d'utilisation d'une page pour chaque client.",
+   "Enregistrer une courte démo en capture d'écran, sans montrer ta tête."],
+  p:"Deuxième automatisation livrée, documentée, avec témoignage.",
+  d:"Couper volontairement une connexion de ton workflow : vérifier que tu es alerté et que tu répares en moins de 15 min.",
+  tip:"Un client paie pour être tranquille, pas pour la technique. Une automatisation qui plante en silence te coûte ta réputation.",
+  links:["n8nC","makeC"]},
+ {n:11,t:"Le portfolio",s:"Mois 3 : clients",g:"Transformer ton travail en preuves que tu peux montrer.",
+  tasks:["Choisir tes 3 meilleures réalisations.",
+   "Pour chacune : le problème, la solution, le temps gagné, 2 captures d'écran.",
+   "Mettre ces études de cas sur une page simple hébergée sur Netlify.",
+   "Créer ton profil freelance sur Malt avec ces 3 cas."],
+  p:"Ta page portfolio en ligne.",
+  d:"Demander à Claude de jouer un gérant de PME pressé : que comprend-il de ta page en 30 secondes ?",
+  tip:"Parle de résultats, pas d'outils. « 4 h gagnées par semaine sur les devis » vend mieux que « workflow n8n avec agent IA ».",
+  links:["malt"]},
+ {n:12,t:"Offre et premiers messages",s:"Mois 3 : clients",g:"Tout préparer pour vendre dès le mois 4.",
+  tasks:["Choisir une niche : un type de métier et un problème précis que tu sais résoudre.",
+   "Écrire ton offre en une phrase : pour qui, quel problème, quel résultat, quel prix.",
+   "Vérifier ton contrat de travail (clause d'exclusivité) et te renseigner sur la micro-entreprise.",
+   "Lister 50 prospects et préparer 3 modèles de messages."],
+  p:"Envoyer tes 10 premiers messages de prospection.",
+  d:"L'examen final : Claude te donne un brief au hasard, tu construis le workflow complet en 3 h, sans tuto.",
+  tip:"Les premières réponses seront rares, c'est normal. 10 messages, c'est un test de ton message, pas un verdict sur toi.",
+  links:["formal","urssaf","malt"]}
+];
+
+const PROMPTS = [
+ ["Tuteur","Je suis débutant en automatisation (Make et n8n) et je suis en semaine [X] de mon plan. Explique-moi [concept] simplement, avec une analogie tirée d'un labo d'essais BTP, puis pose-moi 3 questions pour vérifier que j'ai compris. Ne me donne pas les réponses avant que j'aie essayé."],
+ ["Débogage","Mon scénario [Make/n8n] ne marche pas. Ce qu'il doit faire : [...]. Ce qui se passe : [...]. Message d'erreur : [...]. Ce que j'ai déjà essayé : [...]. Aide-moi à trouver la cause en me posant des questions, au lieu de me donner directement la solution."],
+ ["Examen","Donne-moi un brief client réaliste de petite entreprise française à automatiser, adapté à mon niveau de la semaine [X]. Ne donne aucune solution. Quand j'aurai fini, je te décrirai mon workflow et tu le noteras sur 10 avec ce qui manque."]
+];
+
+const KEY="autom12_v1";
+function def(){return {start:null,done:{},energy:{},notes:{}}}
+function load(){try{const r=localStorage.getItem(KEY);if(r)return Object.assign(def(),JSON.parse(r));}catch(e){}return def();}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+let S=load();
+
+const items=w=>[...w.tasks.map((_,i)=>`t-${w.n}-${i}`),`p-${w.n}`,`d-${w.n}`];
+const doneIn=w=>items(w).filter(k=>S.done[k]).length;
+const TOTAL=WEEKS.reduce((a,w)=>a+items(w).length,0);
+function curWeek(){
+  if(!S.start)return 1;
+  const d=Math.floor((Date.now()-new Date(S.start+"T00:00:00").getTime())/864e5);
+  return Math.min(12,Math.max(1,Math.floor(d/7)+1));
+}
+function fmt(iso){const [y,m,d]=iso.split("-");return `${d}/${m}/${y}`}
+function today(){const t=new Date();return new Date(t.getTime()-t.getTimezoneOffset()*6e4).toISOString().slice(0,10)}
+
+function curve(){
+  const W=340,H=200,l=34,r=12,t=14,b=30,iw=W-l-r,ih=H-t-b;
+  const cw=curWeek();
+  let lastDone=0;WEEKS.forEach((w,i)=>{if(doneIn(w)>0)lastDone=i+1});
+  const upto=Math.max(S.start?cw:0,lastDone);
+  let cT=0,cA=0;const pT=[[l,t+ih]],pA=[[l,t+ih]];
+  WEEKS.forEach((w,i)=>{
+    cT+=items(w).length;cA+=doneIn(w);
+    const x=l+iw*(i+1)/12;
+    pT.push([x,t+ih-ih*cT/TOTAL]);
+    if(i<upto)pA.push([x,t+ih-ih*cA/TOTAL]);
+  });
+  const path=p=>p.map((q,i)=>(i?"L":"M")+q[0].toFixed(1)+" "+q[1].toFixed(1)).join(" ");
+  let g="";
+  [0,25,50,75,100].forEach(v=>{const y=t+ih-ih*v/100;
+    g+=`<line x1="${l}" x2="${W-r}" y1="${y}" y2="${y}" stroke="var(--grid)" stroke-width="${v%50?0.5:0.9}"/>`+
+       `<text x="${l-6}" y="${y+3.5}" text-anchor="end" font-size="9" fill="var(--muted)">${v}%</text>`});
+  for(let i=1;i<=12;i++){const x=l+iw*i/12;
+    g+=`<line x1="${x}" x2="${x}" y1="${t}" y2="${t+ih}" stroke="var(--grid)" stroke-width="0.4"/>`+
+       `<text x="${x}" y="${t+ih+13}" text-anchor="middle" font-size="9" fill="${i===cw&&S.start?'var(--accent)':'var(--muted)'}" font-weight="${i===cw&&S.start?700:400}">${i}</text>`}
+  g+=`<text x="${l+iw/2}" y="${H-3}" text-anchor="middle" font-size="9" fill="var(--muted)">semaines</text>`;
+  const last=pA[pA.length-1];
+  return `<svg class="curve" viewBox="0 0 ${W} ${H}" role="img" aria-label="Courbe de progression : ${Math.round(100*cA/TOTAL)} % du plan validé">
+    ${g}
+    <path d="${path(pT)}" fill="none" stroke="var(--grid)" stroke-width="1.6" stroke-dasharray="4 3"/>
+    ${pA.length>1?`<path d="${path(pA)}" fill="none" stroke="var(--accent)" stroke-width="2.6" stroke-linejoin="round"/>
+    <circle cx="${last[0]}" cy="${last[1]}" r="4.2" fill="var(--accent)"/>`:""}
+  </svg>`;
+}
+
+function renderHero(){
+  const cA=WEEKS.reduce((a,w)=>a+doneIn(w),0),pct=Math.round(100*cA/TOTAL),cw=curWeek();
+  let startHtml;
+  if(!S.start){
+    startHtml=`<div class="start"><button class="btn" id="go">Je commence aujourd'hui</button>
+      <span style="color:var(--muted);font-size:.9rem">ou choisis une date</span>
+      <input type="date" id="startDate" aria-label="Date de début"></div>`;
+  } else {
+    startHtml=`<div class="start"><span style="color:var(--muted);font-size:.9rem">Changer la date de début</span>
+      <input type="date" id="startDate" value="${S.start}" aria-label="Date de début"></div>`;
+  }
+  document.getElementById("hero").innerHTML=`
+   <div class="sheet">
+     <div class="sheet-head">
+       <div><span class="field">Fiche de progression</span><span class="value">${S.start?"Début le "+fmt(S.start):"Pas encore commencé"}</span></div>
+       <div><span class="field">Semaine</span><span class="value">${S.start?cw:"–"} / 12</span></div>
+     </div>
+     ${curve()}
+     <div class="sheet-foot"><strong>${pct} % du plan validé</strong> (${cA} étapes sur ${TOTAL}).
+       <div class="legend"><span>Ta courbe</span><span class="t">Rythme cible</span></div></div>
+   </div>${startHtml}`;
+  const go=document.getElementById("go");
+  if(go)go.onclick=()=>{S.start=today();save();renderAll()};
+  document.getElementById("startDate").onchange=e=>{if(e.target.value){S.start=e.target.value;save();renderAll()}};
+}
+
+function renderWeeks(){
+  const cw=curWeek(),el=document.getElementById("weeks");
+  const openSet=new Set([...el.querySelectorAll("details[open]")].map(d=>+d.dataset.w));
+  const first=!el.dataset.init;
+  el.innerHTML=WEEKS.map(w=>{
+    const n=doneIn(w),tot=items(w).length,isNow=S.start&&w.n===cw;
+    const open=first?(w.n===cw):openSet.has(w.n);
+    const cb=(k,txt,tag)=>`<label class="check"><input type="checkbox" data-k="${k}" ${S.done[k]?"checked":""}><span>${tag?`<span class="tag">${tag}</span>`:""}${txt}</span></label>`;
+    return `<details class="week${isNow?" now":""}" data-w="${w.n}" ${open?"open":""}>
+      <summary><span class="wnum">${w.n}</span><span class="wtitle">${w.t}<span class="wsub">${w.s}${isNow?", cette semaine":""}</span></span>
+      <span class="count${n===tot?" full":""}">${n}/${tot}</span></summary>
+      <div class="wbody">
+        <p class="goal">${w.g}</p>
+        ${w.tasks.map((x,i)=>cb(`t-${w.n}-${i}`,x)).join("")}
+        ${cb(`p-${w.n}`,w.p,"Projet de la semaine")}
+        ${cb(`d-${w.n}`,w.d,"Défi sans tuto")}
+        <div class="tip">${w.tip}</div>
+        <div class="links">${w.links.map(k=>`<a href="${L[k][1]}" target="_blank" rel="noopener">${L[k][0]}</a>`).join("")}</div>
+        <div class="energy" data-w="${w.n}"><span class="lbl">Énergie cette semaine</span>
+          ${[1,2,3,4,5].map(v=>`<button type="button" data-v="${v}" class="${S.energy[w.n]===v?"on":""}" aria-pressed="${S.energy[w.n]===v}">${v}</button>`).join("")}</div>
+        <textarea data-note="${w.n}" placeholder="Ce que j'ai compris, ce qui a bloqué, ce que je refais la semaine prochaine" aria-label="Notes de la semaine ${w.n}"></textarea>
+      </div></details>`;
+  }).join("");
+  el.dataset.init="1";
+  el.querySelectorAll("textarea[data-note]").forEach(t=>{t.value=S.notes[t.dataset.note]||""});
+}
+
+function renderRes(){
+  const r=(k,desc)=>`<div class="res"><a href="${L[k][1]}" target="_blank" rel="noopener">${L[k][0]}</a><p>${desc}</p></div>`;
+  document.getElementById("tab-res").innerHTML=`
+   <h1>Ressources</h1>
+   <p class="lede">Tout est gratuit, sauf les quelques euros d'API à partir de la semaine 5.</p>
+   <h2>Se former</h2>
+   <div class="group">
+     ${r("make","Commence ici. Cours courts, badges à chaque niveau (Foundation, Basics, Intermediate), puis le parcours agents IA.")}
+     ${r("n8n1","Cours texte officiel pour débutant, avec badge sur le forum n8n.")}
+     ${r("n8n2","La suite : données, JavaScript dans le nœud Code, gestion des erreurs.")}
+     ${r("dc","Cours vidéo gratuit avec exercices, bon complément au Level 1.")}
+     ${r("fcc","Les bases de JavaScript pour la semaine 8.")}
+     ${r("json","Comprendre le format de données que tu vas manipuler partout.")}
+     ${r("prompt","Écrire des prompts fiables pour tes workflows IA.")}
+   </div>
+   <h2>S'entraîner</h2>
+   <div class="group">
+     ${r("makeT","Des scénarios tout faits à décortiquer module par module.")}
+     ${r("n8nT","Des milliers de workflows à importer et à comprendre.")}
+     ${r("hook","Voir exactement ce qu'une appli envoie à un webhook.")}
+     ${r("meteo","API gratuite, sans clé, parfaite pour ton premier appel API.")}
+     ${r("tally","Formulaires gratuits, faciles à brancher sur Make et n8n.")}
+   </div>
+   <h2>Demander de l'aide</h2>
+   <div class="group">
+     ${r("makeC","Cherche ton erreur avant de poster : quelqu'un l'a souvent déjà eue.")}
+     ${r("n8nC","Même principe pour n8n, très actif.")}
+   </div>
+   <h2>Les IA à utiliser</h2>
+   <div class="group">
+     ${r("claude","Ton tuteur, ton débogueur et ton relecteur. Il peut aussi générer un workflow n8n au format JSON que tu importes, mais seulement une fois que tu sais le lire.")}
+     ${r("nblm","Charge-y la doc Make ou n8n et pose tes questions : les réponses citent leurs sources.")}
+     <div class="res"><b>ChatGPT ou Gemini</b><p>En second avis quand une réponse de Claude te semble floue.</p></div>
+   </div>
+   <h2>Réglages et skills Claude</h2>
+   <div class="group">
+     <div class="res"><b>Un projet « Automatisation »</b><p>Crée un projet Claude dédié et mets-y ton carnet d'erreurs et ce plan : Claude aura ton contexte à chaque conversation.</p></div>
+     <div class="res"><b>Un skill « Coach automatisation »</b><p>Active les skills dans les réglages de Claude, puis demande : « Utilise skill-creator pour me créer un skill qui me fait réviser l'automatisation avec des quiz et des défis adaptés à ma semaine du plan. »</p></div>
+     <div class="res"><b>Les connecteurs Gmail et Drive</b><p>Claude peut lire tes docs et tes mails de test : pratique pour vérifier ce que tes workflows produisent.</p></div>
+     <div class="res"><b>Plus tard : Claude Code</b><p>À partir du mois 4, pour construire des outils plus poussés et, un jour, ton propre SaaS.</p></div>
+   </div>
+   <h2>Prompts à copier</h2>
+   <div class="group">
+     ${PROMPTS.map((p,i)=>`<div class="res"><b>${p[0]}</b><div class="prompt">${p[1]}</div><button class="btn ghost small" data-copy="${i}">Copier</button></div>`).join("")}
+   </div>
+   <h2>Se lancer (mois 3)</h2>
+   <div class="group">
+     ${r("malt","La plateforme freelance de référence en France.")}
+     ${r("formal","Pour créer ta micro-entreprise le moment venu.")}
+     ${r("urssaf","Déclarations et cotisations en micro-entreprise.")}
+     <div class="res"><p>Vérifie d'abord ton contrat de travail. En cas de doute sur le cumul, demande à l'URSSAF ou à un conseiller.</p></div>
+   </div>`;
+}
+
+function renderRoutine(){
+  document.getElementById("tab-routine").innerHTML=`
+   <h1>Routine</h1>
+   <p class="lede">Environ 15 h par semaine. C'est ce rythme qui fait passer de « j'essaie » à « je sais faire ».</p>
+   <h2>Semaine type</h2>
+   <div class="group">
+     <div class="slot"><b>Pauses au travail</b><span>Téléphone : 20 min de cours en petites unités, puis clipping.</span></div>
+     <div class="slot"><b>3 soirs</b><span>Ordi, 1 h : pratique sur le projet de la semaine. Les soirs sans énergie, relis ton carnet ou regarde un template.</span></div>
+     <div class="slot"><b>Samedi</b><span>4 h : le gros bloc projet.</span></div>
+     <div class="slot"><b>Dimanche</b><span>2 h : défi sans tuto, carnet d'erreurs, note d'énergie de la semaine.</span></div>
+     <div class="slot"><b>Salle</b><span>Elle reste. C'est elle qui tient ton énergie pour le reste.</span></div>
+   </div>
+   <h2>Règles d'or</h2>
+   <div class="group"><ul class="rules">
+     <li>Bloqué 20 minutes : tu demandes à Claude, en expliquant ce que tu as essayé.</li>
+     <li>Tu ne gardes jamais un module que tu ne sais pas expliquer.</li>
+     <li>Chaque semaine se termine par un défi sans tuto. C'est ta vraie note.</li>
+     <li>Une semaine ratée se rattrape. Deux semaines d'arrêt tuent l'élan : fais au moins le défi du dimanche.</li>
+     <li>Note ton énergie chaque dimanche. Trois semaines à 1 ou 2, on ajuste le plan au lieu de forcer.</li>
+   </ul></div>
+   <h2>Le clipping en parallèle</h2>
+   <div class="group"><ul class="rules">
+     <li>Téléphone et pauses uniquement. L'ordi est réservé à l'automatisation.</li>
+     <li>Suis tes gains dans le tracker que tu construis en semaine 3.</li>
+     <li>À la fin de chaque mois, calcule tes gains par heure. S'il vole du temps d'apprentissage, tu le réduis.</li>
+   </ul></div>
+   <p class="danger">Changer de téléphone ou de navigateur efface ta progression, elle est stockée sur cet appareil.
+   <br><button class="btn ghost small" id="reset" style="margin-top:8px">Réinitialiser ma progression</button></p>`;
+  document.getElementById("reset").onclick=()=>{
+    if(confirm("Effacer toutes tes cases, notes et la date de début ?")){S=def();save();document.getElementById("weeks").dataset.init="";renderAll();toast("Progression réinitialisée")}
+  };
+}
+
+function renderAll(){renderHero();renderWeeks()}
+
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),1600)}
+
+document.addEventListener("change",e=>{
+  const k=e.target.dataset&&e.target.dataset.k;
+  if(k){S.done[k]=e.target.checked;if(!S.done[k])delete S.done[k];save();renderAll();
+    const w=WEEKS.find(x=>x.n===+k.split("-")[1]);if(w&&e.target.checked&&doneIn(w)===items(w).length)toast(`Semaine ${w.n} validée`)}
+});
+document.addEventListener("input",e=>{
+  const n=e.target.dataset&&e.target.dataset.note;
+  if(n){S.notes[n]=e.target.value;save()}
+});
+document.addEventListener("click",e=>{
+  const eb=e.target.closest(".energy button");
+  if(eb){const w=eb.parentElement.dataset.w,v=+eb.dataset.v;S.energy[w]=S.energy[w]===v?undefined:v;if(!S.energy[w])delete S.energy[w];save();renderWeeks();return}
+  const cp=e.target.closest("[data-copy]");
+  if(cp){const txt=PROMPTS[+cp.dataset.copy][1];
+    const done=()=>toast("Prompt copié");
+    if(navigator.clipboard)navigator.clipboard.writeText(txt).then(done,()=>fallback(txt,done));else fallback(txt,done);return}
+  const tb=e.target.closest("nav.tabs button");
+  if(tb){document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",b===tb));
+    ["plan","res","routine"].forEach(id=>document.getElementById("tab-"+id).hidden=id!==tb.dataset.tab);
+    window.scrollTo(0,0)}
+});
+function fallback(txt,cb){const a=document.createElement("textarea");a.value=txt;document.body.appendChild(a);a.select();try{document.execCommand("copy");cb()}catch(e){}a.remove()}
+
+renderAll();renderRes();renderRoutine();
+</script>
+</body>
+</html>
