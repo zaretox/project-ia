@@ -104,9 +104,23 @@ ul.rules{margin:6px 0;padding-left:1.1em}
 ul.rules li{margin:6px 0}
 .danger{color:var(--muted);font-size:.88rem;margin-top:26px}
 
+/* Clipping */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);border:1.5px solid var(--ink);border-radius:3px;background:var(--paper)}
+.stats div{padding:10px 8px;text-align:center}
+.stats div + div{border-left:1.5px solid var(--ink)}
+.stats .value{display:block;font-size:1.35rem}
+.verdict{margin:8px 0 0;font-size:.93rem;color:var(--muted)}
+.logform{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:10px 0}
+.logform label{font-size:.82rem;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+.logform input{font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:4px;padding:7px 8px;width:100%}
+.logrow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line);font-size:.93rem}
+.logrow:last-child{border-bottom:0}
+.logrow button{background:none;border:1px solid var(--line);border-radius:4px;padding:4px 8px;font-size:.82rem;color:var(--muted);cursor:pointer}
+.daycount{font:600 1rem var(--display);color:var(--muted);float:right}
+.daycount.full{color:var(--ok)}
 /* Barre d'onglets */
-nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--paper);border-top:1.5px solid var(--ink);display:grid;grid-template-columns:repeat(3,1fr);padding-bottom:env(safe-area-inset-bottom,0px);z-index:10}
-nav.tabs button{background:none;border:0;padding:12px 4px 13px;font:600 1.05rem var(--display);color:var(--muted);cursor:pointer;border-top:3px solid transparent;margin-top:-1.5px}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--paper);border-top:1.5px solid var(--ink);display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:env(safe-area-inset-bottom,0px);z-index:10}
+nav.tabs button{background:none;border:0;padding:12px 2px 13px;font:600 1rem var(--display);color:var(--muted);cursor:pointer;border-top:3px solid transparent;margin-top:-1.5px}
 nav.tabs button[aria-selected=true]{color:var(--ink);border-top-color:var(--accent)}
 [hidden]{display:none!important}
 .toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:4px;font-size:.9rem;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
@@ -124,12 +138,14 @@ nav.tabs button[aria-selected=true]{color:var(--ink);border-top-color:var(--acce
     <div id="weeks"></div>
   </section>
   <section id="tab-res" hidden></section>
+  <section id="tab-clip" hidden></section>
   <section id="tab-routine" hidden></section>
 </div>
 
 <nav class="tabs" role="tablist">
   <button role="tab" aria-selected="true" data-tab="plan">Plan</button>
   <button role="tab" aria-selected="false" data-tab="res">Ressources</button>
+  <button role="tab" aria-selected="false" data-tab="clip">Clipping</button>
   <button role="tab" aria-selected="false" data-tab="routine">Routine</button>
 </nav>
 <div class="toast" id="toast"></div>
@@ -154,7 +170,11 @@ const L = {
   nblm:["NotebookLM","https://notebooklm.google.com/"],
   malt:["Malt","https://www.malt.fr/"],
   formal:["Guichet unique entreprises","https://formalites.entreprises.gouv.fr/"],
-  urssaf:["URSSAF auto-entrepreneur","https://www.autoentrepreneur.urssaf.fr/"]
+  urssaf:["URSSAF auto-entrepreneur","https://www.autoentrepreneur.urssaf.fr/"],
+  whop:["Whop","https://whop.com/"],
+  vyro:["Vyro","https://vyroclips.com/"],
+  opus:["OpusClip","https://www.opus.pro/"],
+  capcut:["CapCut","https://www.capcut.com/"]
 };
 
 const WEEKS = [
@@ -275,10 +295,11 @@ const PROMPTS = [
 ];
 
 const KEY="autom12_v1";
-function def(){return {start:null,done:{},energy:{},notes:{}}}
+function def(){return {start:null,done:{},energy:{},notes:{},clip:{day:"",done:{},log:[]}}}
 function load(){try{const r=localStorage.getItem(KEY);if(r)return Object.assign(def(),JSON.parse(r));}catch(e){}return def();}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 let S=load();
+if(!S.clip||!Array.isArray(S.clip.log))S.clip={day:"",done:{},log:[]};
 
 const items=w=>[...w.tasks.map((_,i)=>`t-${w.n}-${i}`),`p-${w.n}`,`d-${w.n}`];
 const doneIn=w=>items(w).filter(k=>S.done[k]).length;
@@ -451,13 +472,13 @@ function renderRoutine(){
    <h2>Le clipping en parallèle</h2>
    <div class="group"><ul class="rules">
      <li>Téléphone et pauses uniquement. L'ordi est réservé à l'automatisation.</li>
-     <li>Suis tes gains dans le tracker que tu construis en semaine 3.</li>
+     <li>Note chaque session dans l'onglet Clipping, puis dans le tracker que tu construis en semaine 3.</li>
      <li>À la fin de chaque mois, calcule tes gains par heure. S'il vole du temps d'apprentissage, tu le réduis.</li>
    </ul></div>
    <p class="danger">Changer de téléphone ou de navigateur efface ta progression, elle est stockée sur cet appareil.
    <br><button class="btn ghost small" id="reset" style="margin-top:8px">Réinitialiser ma progression</button></p>`;
   document.getElementById("reset").onclick=()=>{
-    if(confirm("Effacer toutes tes cases, notes et la date de début ?")){S=def();save();document.getElementById("weeks").dataset.init="";renderAll();toast("Progression réinitialisée")}
+    if(confirm("Effacer toutes tes cases, notes et la date de début ?")){S=def();save();document.getElementById("weeks").dataset.init="";renderAll();renderClip();toast("Progression réinitialisée")}
   };
 }
 
@@ -483,12 +504,122 @@ document.addEventListener("click",e=>{
     if(navigator.clipboard)navigator.clipboard.writeText(txt).then(done,()=>fallback(txt,done));else fallback(txt,done);return}
   const tb=e.target.closest("nav.tabs button");
   if(tb){document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",b===tb));
-    ["plan","res","routine"].forEach(id=>document.getElementById("tab-"+id).hidden=id!==tb.dataset.tab);
+    ["plan","res","clip","routine"].forEach(id=>document.getElementById("tab-"+id).hidden=id!==tb.dataset.tab);
     window.scrollTo(0,0)}
 });
 function fallback(txt,cb){const a=document.createElement("textarea");a.value=txt;document.body.appendChild(a);a.select();try{document.execCommand("copy");cb()}catch(e){}a.remove()}
 
-renderAll();renderRes();renderRoutine();
+
+const CLIP_DAY=[
+ "Choisir le passage du jour (OpusClip ou repérage à la main)",
+ "Clip 1 : montage CapCut, sous-titres, accroche des 2 premières secondes",
+ "Clip 1 posté sur TikTok, Shorts et Reels",
+ "Clip 2 : montage, sous-titres, accroche",
+ "Clip 2 posté sur les 3 plateformes",
+ "Posts soumis sur la campagne Whop"
+];
+const CLIP_PROMPT="Voici la transcription d'un passage vidéo que je vais clipper pour TikTok, Shorts et Reels : [colle la transcription]. Donne-moi 5 accroches de moins de 8 mots à afficher dans les 2 premières secondes, qui donnent envie de rester jusqu'au bout. Puis une description courte avec 3 hashtags pertinents.";
+
+function renderClip(){
+  const C=S.clip;
+  if(C.day!==today()){C.day=today();C.done={};save()}
+  const nDone=CLIP_DAY.filter((_,i)=>C.done[i]).length;
+  const log=C.log||[];
+  const gains=log.reduce((a,e)=>a+(+e.g||0),0),mins=log.reduce((a,e)=>a+(+e.m||0),0),vues=log.reduce((a,e)=>a+(+e.v||0),0);
+  const ym=today().slice(0,7),gMonth=log.filter(e=>e.d.slice(0,7)===ym).reduce((a,e)=>a+(+e.g||0),0);
+  const perH=mins>0?gains/(mins/60):0;
+  let verdict="Note chaque session : au bout de 5 h cumulées, tu verras si le clipping vaut ton temps.";
+  if(mins>=300)verdict=perH<5?"Moins de 5 € de l'heure (seuil indicatif) : réduis le clipping et garde ce temps pour l'automatisation.":"Le clipping rapporte correctement pour ton temps. Garde-le sur les pauses, sans empiéter sur l'apprentissage.";
+  const eur=x=>x.toLocaleString("fr-FR",{maximumFractionDigits:2})+" €";
+  const r=(k,desc)=>`<div class="res"><a href="${L[k][1]}" target="_blank" rel="noopener">${L[k][0]}</a><p>${desc}</p></div>`;
+  document.getElementById("tab-clip").innerHTML=`
+   <h1>Clipping</h1>
+   <p class="lede">Un revenu d'appoint, sur téléphone, pendant les pauses. L'ordi reste réservé à l'automatisation.</p>
+
+   <h2>Aujourd'hui <span class="daycount${nDone===CLIP_DAY.length?" full":""}">${nDone}/${CLIP_DAY.length}</span></h2>
+   <div class="group">
+     ${CLIP_DAY.map((t,i)=>`<label class="check"><input type="checkbox" data-ck="${i}" ${C.done[i]?"checked":""}><span>${t}</span></label>`).join("")}
+   </div>
+   <p class="verdict">La liste se remet à zéro chaque jour.</p>
+
+   <h2>Mes gains</h2>
+   <div class="stats">
+     <div><span class="field">Ce mois-ci</span><span class="value">${eur(gMonth)}</span></div>
+     <div><span class="field">Au total</span><span class="value">${eur(gains)}</span></div>
+     <div><span class="field">Par heure</span><span class="value">${mins>0?eur(perH):"–"}</span></div>
+   </div>
+   <p class="verdict">${vues.toLocaleString("fr-FR")} vues vérifiées, ${Math.round(mins/6)/10} h passées. ${verdict}</p>
+   <div class="group">
+     <div class="logform">
+       <label>Date<input type="date" id="lgD" value="${today()}"></label>
+       <label>Temps passé (min)<input type="number" id="lgM" min="0" inputmode="numeric" placeholder="30"></label>
+       <label>Vues vérifiées<input type="number" id="lgV" min="0" inputmode="numeric" placeholder="0"></label>
+       <label>Gains (€)<input type="number" id="lgG" min="0" step="0.01" inputmode="decimal" placeholder="0"></label>
+     </div>
+     <button class="btn small" id="lgAdd">Ajouter la session</button>
+     ${log.length?`<h3>Dernières sessions</h3>`+log.slice().reverse().slice(0,10).map(e=>`<div class="logrow"><span>${fmt(e.d)} : ${e.m||0} min, ${(+e.v||0).toLocaleString("fr-FR")} vues, ${eur(+e.g||0)}</span><button data-del="${e.id}" aria-label="Supprimer la session du ${fmt(e.d)}">Supprimer</button></div>`).join(""):""}
+   </div>
+
+   <h2>Le plan du mois 1</h2>
+   <div class="group">
+     <div class="slot"><b>Semaine 1</b><span>Créer tes 3 comptes, choisir 1 ou 2 campagnes, analyser 20 clips qui marchent sur ces campagnes et noter leurs accroches.</span></div>
+     <div class="slot"><b>Semaines 2 à 4</b><span>2 clips par jour, publiés sur les 3 plateformes si les règles l'autorisent. Environ 15 min par clip une fois rodé.</span></div>
+     <div class="slot"><b>Fin du mois</b><span>Bilan : garder la campagne et la plateforme qui font le plus de vues. Passer à 3 clips par jour seulement si le gain par heure le justifie.</span></div>
+   </div>
+
+   <h2>Les comptes</h2>
+   <div class="group"><ul class="rules">
+     <li>Un compte par niche, pas par campagne. Deux campagnes de la même thématique peuvent partager le même compte.</li>
+     <li>Deux thématiques différentes : des comptes séparés, sinon l'algorithme ne sait plus à qui montrer tes vidéos.</li>
+     <li>Si une campagne exige un compte dédié, tu en ouvres un pour elle.</li>
+     <li>Pour démarrer : une niche, 3 comptes (TikTok, Shorts, Reels), 2 campagnes au maximum.</li>
+     <li>Jamais le même clip sur plusieurs comptes d'une même plateforme.</li>
+   </ul></div>
+
+   <h2>Choisir une campagne</h2>
+   <div class="group"><ul class="rules">
+     <li>Au moins 1 $ les 1 000 vues.</li>
+     <li>Regarde le tarif multiplié par le budget restant : une campagne presque vide ne paiera plus tes vues.</li>
+     <li>Lis les règles : durée, sous-titres, plateformes acceptées, plafond de gains.</li>
+     <li>Pas de casinos en ligne ni de jetons crypto : illégal en France pour les casinos, et risque de bannissement.</li>
+     <li>Privilégie un créateur francophone business ou tech : tu apprends en clippant.</li>
+   </ul></div>
+
+   <h2>Outils</h2>
+   <div class="group">
+     ${r("whop","Section Content Rewards : les campagnes payées aux 1 000 vues. Gratuit pour les clippeurs.")}
+     ${r("opus","Repère les meilleurs moments d'une vidéo longue et les coupe en vertical. Version gratuite limitée.")}
+     ${r("capcut","Finitions : sous-titres automatiques, zooms, recadrage.")}
+     ${r("vyro","Une autre plateforme de campagnes, à tester une fois Whop maîtrisé.")}
+     <div class="res"><b>Prompt accroches pour Claude</b><div class="prompt">${CLIP_PROMPT}</div><button class="btn ghost small" data-copyclip="1">Copier</button></div>
+   </div>
+
+   <h2>Ce qui fait les vues</h2>
+   <div class="group"><ul class="rules">
+     <li>Les 2 premières secondes font tout : une phrase choc, jamais d'intro.</li>
+     <li>Des sous-titres gros et lisibles, centrés.</li>
+     <li>Entre 20 et 45 secondes, un seul message par clip.</li>
+     <li>Les chiffres honnêtes : à 1 $ les 1 000 vues, 100 € demandent environ 110 000 vues. La plupart des clips feront quelques centaines de vues, quelques-uns porteront tes gains.</li>
+   </ul></div>`;
+}
+
+document.addEventListener("change",e=>{
+  const ck=e.target.dataset&&e.target.dataset.ck;
+  if(ck!==undefined){S.clip.done[ck]=e.target.checked;if(!e.target.checked)delete S.clip.done[ck];save();renderClip();
+    if(CLIP_DAY.every((_,i)=>S.clip.done[i]))toast("Journée de clipping bouclée")}
+});
+document.addEventListener("click",e=>{
+  if(e.target.id==="lgAdd"){
+    const d=document.getElementById("lgD").value||today(),m=+document.getElementById("lgM").value||0,v=+document.getElementById("lgV").value||0,g=+document.getElementById("lgG").value||0;
+    if(!m&&!v&&!g){toast("Remplis au moins un champ");return}
+    S.clip.log.push({id:Date.now(),d,m,v,g});S.clip.log.sort((a,b)=>a.d<b.d?-1:1);save();renderClip();toast("Session ajoutée");return}
+  const del=e.target.closest("[data-del]");
+  if(del){if(confirm("Supprimer cette session ?")){S.clip.log=S.clip.log.filter(x=>String(x.id)!==del.dataset.del);save();renderClip()}return}
+  const cc=e.target.closest("[data-copyclip]");
+  if(cc){const done=()=>toast("Prompt copié");if(navigator.clipboard)navigator.clipboard.writeText(CLIP_PROMPT).then(done,()=>fallback(CLIP_PROMPT,done));else fallback(CLIP_PROMPT,done)}
+});
+
+renderAll();renderRes();renderClip();renderRoutine();
 </script>
 </body>
 </html>
